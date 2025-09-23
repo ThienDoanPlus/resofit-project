@@ -211,3 +211,7 @@ __marimo__/
 node_modules/
 .expo/
 firebase-service-account.json
+echo "backend/firebase-service-account.json" >> .gitignore
+
+
+
