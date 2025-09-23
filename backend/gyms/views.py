@@ -16,7 +16,6 @@ from django.utils import timezone
 class MembershipPackageViewSet(viewsets.ModelViewSet):
     queryset = MembershipPackage.objects.all()
     serializer_class = MembershipPackageSerializer
-
     permission_classes = [IsManagerOrReadOnly]
 
 
@@ -31,7 +30,6 @@ class BookingViewSet(viewsets.ModelViewSet):
             return Booking.objects.filter(pt=user).order_by('-start_time')
         else:
             return Booking.objects.filter(member=user).order_by('-start_time')
-
 
     @action(detail=True, methods=['post'], permission_classes=[IsPT])
     def approve(self, request, pk=None):
@@ -65,9 +63,6 @@ class BookingViewSet(viewsets.ModelViewSet):
 
 
 class BookedSlotsView(APIView):
-    """
-    API để lấy danh sách các lịch hẹn đã có của user trong một tháng.
-    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -88,9 +83,6 @@ class BookedSlotsView(APIView):
 
 
 class AvailableSlotsView(APIView):
-    """
-    API để lấy các khung giờ còn trống trong một ngày cụ thể.
-    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -116,7 +108,6 @@ class AvailableSlotsView(APIView):
             status='approved'
         ).values_list('start_time', flat=True)
 
-        # CHUYỂN ĐỔI TẤT CẢ DATETIME TỪ DB VỀ DẠNG "NAIVE" THEO MÚI GIỜ HIỆN TẠI CỦA SERVER
         current_tz = timezone.get_current_timezone()
         booked_slots_naive = [slot.astimezone(current_tz).replace(tzinfo=None) for slot in booked_slots]
 
@@ -129,23 +120,18 @@ class AvailableSlotsView(APIView):
 
 
 class UpcomingBookingView(APIView):
-    """
-    API để lấy lịch hẹn sắp tới gần nhất của hội viên.
-    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         now = timezone.now()
-        # Tìm booking gần nhất trong tương lai có trạng thái 'approved'
         upcoming_booking = Booking.objects.filter(
             member=request.user,
             start_time__gte=now,
             status='approved'
-        ).order_by('start_time').first()  # .first() để chỉ lấy 1 bản ghi
+        ).order_by('start_time').first()
 
         if upcoming_booking:
             serializer = BookingSerializer(upcoming_booking)
             return Response(serializer.data)
 
-        # Trả về rỗng nếu không có lịch hẹn nào
         return Response(None)

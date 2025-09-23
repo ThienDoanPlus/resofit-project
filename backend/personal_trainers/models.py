@@ -6,19 +6,19 @@ class PTAssignment(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='assigned_members',
-        limit_choices_to={'role': 'pt'} # Chỉ cho phép user có role 'pt'
+        limit_choices_to={'role': 'pt'}
     )
     member = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='assigned_pt',
-        limit_choices_to={'role': 'member'} # Chỉ cho phép user có role 'member'
+        limit_choices_to={'role': 'member'}
     )
     start_date = models.DateField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        unique_together = ('pt', 'member') # Đảm bảo một cặp PT-Member là duy nhất
+        unique_together = ('pt', 'member')
 
     def __str__(self):
         return f"{self.pt.username} is assigned to {self.member.username}"
