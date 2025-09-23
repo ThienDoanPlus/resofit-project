@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "199891539027",
+    "project_id": "resofit-chat",
+    "storage_bucket": "resofit-chat.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:199891539027:android:cd5ba19b7f46adcc81e2a6",
+        "android_client_info": {
+          "package_name": "com.nguyenthiendoan.frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-6-5NlZBuf8Uu9bPqraIKe9IlE0nHFHM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
