@@ -60,3 +60,28 @@ class MemberProfileSerializer(serializers.ModelSerializer):
         model = MemberProfile
         # Liệt kê các trường mà frontend có thể gửi lên và nhận về
         fields = ['username', 'height', 'initial_weight', 'goal', 'dob']
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializer hiển thị thông tin chi tiết của hội viên cho PT xem.
+    """
+    memberprofile = MemberProfileSerializer(read_only=True)
+
+    subscription = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username', 'email', 'date_joined', 'memberprofile', 'subscription']
+
+    def get_subscription(self, obj):
+        # Di chuyển import vào bên trong phương thức
+        from payments.serializers import SubscriptionSerializer
+        try:
+            # `obj` là một instance CustomUser
+            subscription = obj.subscription
+            # Trả về dữ liệu đã được serialize
+            return SubscriptionSerializer(subscription).data
+        except AttributeError:
+            # Trả về null nếu user không có `subscription` (ví dụ: PT, Manager, hoặc member chưa có gói)
+            return None

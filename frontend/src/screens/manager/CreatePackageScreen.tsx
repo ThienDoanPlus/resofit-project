@@ -24,7 +24,6 @@ const CreatePackageScreen = () => {
   const navigation = useNavigation();
 
   const handleCreatePackage = async () => {
-    // Validate input
     if (!name || !price || !duration) {
       Alert.alert("Lỗi", "Tên, Giá và Thời hạn là bắt buộc.");
       return;
@@ -41,7 +40,7 @@ const CreatePackageScreen = () => {
       };
       await api.post("/api/gyms/packages/", packageData);
       Alert.alert("Thành công", "Đã tạo gói tập mới.");
-      navigation.goBack(); // Quay lại màn hình danh sách
+      navigation.goBack();
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         console.error(error.response.data);
@@ -70,7 +69,7 @@ const CreatePackageScreen = () => {
           onChangeText={setDescription}
           placeholder="Mô tả quyền lợi..."
           multiline
-          style={{ height: 100, paddingTop: 15 }} // Có thể truyền style tùy chỉnh
+          style={{ height: 100, paddingTop: 15 }}
         />
 
         <StyledInput

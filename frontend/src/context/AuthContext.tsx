@@ -1,4 +1,3 @@
-// AuthContext.tsx
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { Alert } from "react-native";
 import * as SecureStore from "expo-secure-store";
@@ -7,7 +6,7 @@ import * as LocalAuthentication from "expo-local-authentication";
 import { signInWithCustomToken } from "firebase/auth";
 import api from "../api/api";
 import { auth } from "../firebase/firebaseConfig";
-import { User } from "../navigation/types"; // Thêm import này
+import { User } from "../navigation/types";
 
 // ---------------- Types ----------------
 
@@ -69,7 +68,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setAccessToken(storedAccessToken);
           setUser(userData);
 
-          // Lấy Firebase custom token từ backend
           const { data: firebaseData } = await api.get(
             "/api/users/firebase-token/"
           );
@@ -80,7 +78,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       } catch (e) {
         console.log("⚠️ Session invalid or expired. Signing out...");
-        // Thay vì tự dọn dẹp, hãy gọi đến "chuyên gia" dọn dẹp
         await signOut();
       } finally {
         setIsLoading(false);
@@ -152,48 +149,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // ---------------- Sign In / Sign Out ----------------
-  // const signIn = async (tokens: { access: string; refresh: string }) => {
-  //   try {
-  //     api.defaults.headers.common["Authorization"] = `Bearer ${tokens.access}`;
-  //     const { data: userData } = await api.get("/api/users/me/");
-  //     setAccessToken(tokens.access);
-  //     setUser(userData);
-
-  //     await SecureStore.setItemAsync("accessToken", tokens.access);
-  //     await SecureStore.setItemAsync("refreshToken", tokens.refresh);
-
-  //     // Đồng bộ Firebase Auth
-  //     const { data: firebaseData } = await api.get(
-  //       "/api/users/firebase-token/"
-  //     );
-  //     if (firebaseData.firebase_token) {
-  //       await signInWithCustomToken(auth, firebaseData.firebase_token);
-  //       console.log("✅ Signed in to Firebase successfully!");
-  //     }
-  //   } catch (e) {
-  //     console.error("❌ Failed to sign in", e);
-  //     await signOut(); // Dọn dẹp nếu lỗi
-  //   }
-  // };
-  // THAY THẾ HÀM CŨ BẰNG HÀM NÀY
   const signIn = async (tokens: { access: string; refresh: string }) => {
     try {
-      // ---- Phần xác thực với backend của bạn ----
-      // Phần này vẫn giữ nguyên vì nó đã hoạt động tốt
       api.defaults.headers.common["Authorization"] = `Bearer ${tokens.access}`;
       const { data: userData } = await api.get("/api/users/me/");
 
       await SecureStore.setItemAsync("accessToken", tokens.access);
       await SecureStore.setItemAsync("refreshToken", tokens.refresh);
 
-      // Cập nhật state chính để người dùng vào được app
       setAccessToken(tokens.access);
       setUser(userData);
 
-      // ---- Phần đồng bộ Firebase được xử lý riêng ----
-      // Chúng ta sẽ bọc riêng phần này trong một try...catch khác
-      // để lỗi của nó không ảnh hưởng đến toàn bộ quá trình đăng nhập.
       try {
         const { data: firebaseData } = await api.get(
           "/api/users/firebase-token/"
@@ -207,18 +173,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           console.warn("⚠️ Could not get Firebase token from backend.");
         }
       } catch (firebaseError) {
-        // Nếu Firebase lỗi, chúng ta chỉ cảnh báo thay vì đăng xuất
         console.warn(
           "❌ Failed to sign in to Firebase. The main session is still active.",
           firebaseError
         );
-        // BẠN CÓ THỂ HIỂN THỊ MỘT ALERT NHỎ Ở ĐÂY NẾU MUỐN
-        // Alert.alert("Lỗi đồng bộ", "Không thể đăng nhập vào dịch vụ chat. Vui lòng thử lại sau.");
       }
     } catch (e) {
-      // Catch này bây giờ chỉ bắt lỗi của backend (ví dụ: sai mật khẩu)
       console.error("❌ Failed to sign in to backend", e);
-      await signOut(); // Dọn dẹp nếu lỗi từ backend
+      await signOut();
     }
   };
 
@@ -255,5 +217,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Hook để dùng context
 export const useAuth = () => useContext(AuthContext);

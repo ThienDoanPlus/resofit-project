@@ -1,14 +1,16 @@
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
-from .models import ProgressLog
-from .serializers import ProgressLogSerializer
+from .models import ProgressLog, WaterLog
+from .serializers import ProgressLogSerializer, WaterLogSerializer
 from users.permissions import IsOwnerOrAssignedPT
 from rest_framework.views import APIView
 from users.models import CustomUser
 import google.generativeai as genai
 from django.conf import settings
 import json
+from django.utils import timezone
+
 
 genai.configure(api_key=settings.GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash-latest')
@@ -54,11 +56,10 @@ class ProgressLogViewSet(viewsets.ModelViewSet):
             except (ValueError, TypeError):
                 pass  # Bỏ qua nếu param không hợp lệ
 
-        # Luôn trả về theo thứ tự ngày tăng dần, tốt cho biểu đồ
+        # Luôn trả về theo thứ tự ngày tăng dần
         return queryset.order_by('date')
 
     def perform_create(self, serializer):
-        # Logic này cần được làm thông minh hơn
         user = self.request.user
         if user.role == 'pt':
             member_id = self.request.data.get('member_id')
@@ -73,7 +74,7 @@ class ProgressSummaryView(APIView):
 
     def get(self, request, *args, **kwargs):
         requesting_user = request.user
-        # Lấy member_id từ query param, ví dụ: /api/tracking/summary/?member_id=5
+        # Lấy member_id từ query param
         member_id = request.query_params.get('member_id', None)
 
         target_member = None
@@ -88,7 +89,6 @@ class ProgressSummaryView(APIView):
                 return Response({"error": "Member not found"}, status=status.HTTP_404_NOT_FOUND)
         else:
             # Nếu là Hội viên, hoặc PT không cung cấp member_id,
-            # đối tượng mặc định là chính người dùng
             target_member = requesting_user
 
         # --- Bắt đầu logic tính toán, sử dụng `target_member` ---
@@ -135,59 +135,111 @@ class GenerateAdviceView(APIView):
         weight = request.data.get('weight')
         height = request.data.get('height') # tính bằng cm
         bmi = request.data.get('bmi')
-        goal = user.memberprofile.goal # Lấy mục tiêu từ profile
+        goal = "Không có mục tiêu cụ thể"
+        if hasattr(user, 'memberprofile') and user.memberprofile and user.memberprofile.goal:
+            goal = user.memberprofile.goal
 
-        # --- Tạo Prompt cho AI ---
-        prompt = f"""
-        Bạn là một chuyên gia dinh dưỡng và huấn luyện viên thể hình AI. 
-        Dựa trên các chỉ số sau của một người dùng:
-        - Chiều cao: {height} cm
-        - Cân nặng: {weight} kg
-        - Chỉ số BMI: {bmi:.2f}
-        - Mục tiêu: "{goal}"
+        if not all([weight, height, bmi]):
+            return Response({"error": "Missing required data"}, status=status.HTTP_400_BAD_REQUEST)
 
-        Hãy đưa ra hai lời khuyên ngắn gọn, đi thẳng vào vấn đề, mỗi lời khuyên không quá 3 câu:
-        1. Một lời khuyên về chế độ ăn uống.
-        2. Một lời khuyên về nhóm cơ hoặc loại bài tập cần tập trung.
 
-        Trả lời bằng tiếng Việt. Định dạng câu trả lời của bạn chính xác như sau:
-        {{
-            "diet_advice": "Nội dung lời khuyên ăn uống.",
-            "workout_advice": "Nội dung lời khuyên luyện tập."
-        }}
-        """
+
 
         # try:
         #     response = model.generate_content(prompt)
-        #     # Parse a JSON string from the model's response
-        #     advice_json = json.loads(response.text.strip())
+        #
+        #     # --- LOGIC DỌN DẸP ĐƯỢC NÂNG CẤP ---
+        #     # 1. Dọn dẹp Markdown
+        #     clean_response_text = response.text.strip().replace('```json', '').replace('```', '').strip()
+        #
+        #     # 2. Xử lý dấu phẩy thừa (trailing comma)
+        #     # Tạm thời, một cách đơn giản là thay thế các trường hợp phổ biến
+        #     clean_response_text = clean_response_text.replace(',\n}', '\n}').replace(',\n]', '\n]')
+        #
+        #     # Thêm kiểm tra trước khi parse
+        #     if not clean_response_text:
+        #         raise ValueError("Gemini returned an empty response.")
+        #
+        #     advice_json = json.loads(clean_response_text)
         #     return Response(advice_json)
+        #
+        # except json.JSONDecodeError as e:
+        #     print(f"JSON Decode Error: {e}")
+        #     print(f"Faulty text was: {clean_response_text}")
+        #     return Response({"error": "AI trả về định dạng không hợp lệ."},
+        #                     status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         # except Exception as e:
         #     print(f"Gemini API error: {e}")
-        #     return Response({"error": "Không thể tạo lời khuyên."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        #     return Response({"error": "Không thể tạo lời khuyên từ AI."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         try:
+            if not settings.GEMINI_API_KEY:
+                raise ValueError("GEMINI_API_KEY is not configured.")
+
+            genai.configure(api_key=settings.GEMINI_API_KEY)
+            model = genai.GenerativeModel('gemini-1.5-flash-latest')
+
+            # --- Tạo Prompt cho AI ---
+            prompt = f"""
+                   Bạn là một chuyên gia dinh dưỡng và huấn luyện viên thể hình AI. 
+                   Dựa trên các chỉ số sau của một người dùng:
+                   - Chiều cao: {height} cm
+                   - Cân nặng: {weight} kg
+                   - Chỉ số BMI: {bmi:.2f}
+                   - Mục tiêu: "{goal}"
+
+                   Hãy đưa ra hai lời khuyên ngắn gọn, đi thẳng vào vấn đề, mỗi lời khuyên không quá 3 câu:
+                   1. Một lời khuyên về chế độ ăn uống.
+                   2. Một lời khuyên về nhóm cơ hoặc loại bài tập cần tập trung.
+
+                   Trả lời bằng tiếng Việt. Định dạng câu trả lời của bạn chính xác như sau:
+                   {{
+                       "diet_advice": "Nội dung lời khuyên ăn uống.",
+                       "workout_advice": "Nội dung lời khuyên luyện tập."
+                   }}
+                   """
+
             response = model.generate_content(prompt)
 
-            # --- LOGIC DỌN DẸP ĐƯỢC NÂNG CẤP ---
-            # 1. Dọn dẹp Markdown
-            clean_response_text = response.text.strip().replace('```json', '').replace('```', '').strip()
-
-            # 2. Xử lý dấu phẩy thừa (trailing comma)
-            # Tạm thời, một cách đơn giản là thay thế các trường hợp phổ biến
-            clean_response_text = clean_response_text.replace(',\n}', '\n}').replace(',\n]', '\n]')
-
-            # Thêm kiểm tra trước khi parse
-            if not clean_response_text:
+            clean_text = response.text.strip().replace('```json', '').replace('```', '').strip()
+            if not clean_text:
                 raise ValueError("Gemini returned an empty response.")
 
-            advice_json = json.loads(clean_response_text)
+            # Xử lý trailing comma
+            if clean_text.endswith(',}'):
+                clean_text = clean_text[:-2] + '}'
+
+            advice_json = json.loads(clean_text)
             return Response(advice_json)
 
         except json.JSONDecodeError as e:
-            print(f"JSON Decode Error: {e}")
-            print(f"Faulty text was: {clean_response_text}")
+            print(f"JSON Decode Error: {e}\nFaulty text: '{clean_text}'")
             return Response({"error": "AI trả về định dạng không hợp lệ."},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
-            print(f"Gemini API error: {e}")
+            print(f"Gemini API Error: {e}")
             return Response({"error": "Không thể tạo lời khuyên từ AI."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class DailyWaterLogView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        today = timezone.now().date()
+        # Lấy hoặc tạo bản ghi nước cho ngày hôm nay
+        water_log, created = WaterLog.objects.get_or_create(member=request.user, date=today)
+        serializer = WaterLogSerializer(water_log)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        today = timezone.now().date()
+        water_log, created = WaterLog.objects.get_or_create(member=request.user, date=today)
+
+        # Lấy lượng nước muốn thêm từ request
+        amount_to_add = request.data.get('amount', 0)
+        if not isinstance(amount_to_add, int) or amount_to_add <= 0:
+            return Response({"error": "Invalid amount"}, status=status.HTTP_400_BAD_REQUEST)
+
+        water_log.amount += amount_to_add
+        water_log.save()
+        serializer = WaterLogSerializer(water_log)
+        return Response(serializer.data)

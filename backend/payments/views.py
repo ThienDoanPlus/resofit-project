@@ -1,14 +1,16 @@
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 import uuid
 from gyms.models import MembershipPackage
-from .models import Payment
+from .models import Payment, Subscription
 from .momo_service import create_momo_payment_request
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
+from datetime import timedelta
 
 class CreateMoMoPayment(APIView):
     permission_classes = [IsAuthenticated]
@@ -23,7 +25,7 @@ class CreateMoMoPayment(APIView):
         order_id = str(uuid.uuid4())
         amount = package.price
         order_info = f"Thanh toán gói {package.name}"
-        extra_data = ""  # Có thể thêm thông tin bổ sung nếu cần
+        extra_data = ""
 
         momo_response, request_id = create_momo_payment_request(order_id, amount, order_info, extra_data)
 
@@ -60,6 +62,12 @@ def momo_ipn_listener(request):
             payment.status = 'completed'
             payment.trans_id = trans_id
             payment.save()
+            subscription, created = Subscription.objects.get_or_create(member=payment.member)
+            subscription.package = payment.package
+            subscription.start_date = timezone.now().date()
+            subscription.end_date = timezone.now().date() + timedelta(days=payment.package.duration)
+            subscription.save()
+
             # TODO: KÍCH HOẠT GÓI TẬP CHO HỘI VIÊN
         else:
             # Thanh toán thất bại

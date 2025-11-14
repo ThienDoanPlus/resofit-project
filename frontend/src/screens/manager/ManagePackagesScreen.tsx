@@ -11,10 +11,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import api from "../../api/api";
-import { Ionicons } from "@expo/vector-icons"; // Thêm nếu chưa có
+import { Ionicons } from "@expo/vector-icons";
 import { ManagerNavigationProp, Package } from "../../navigation/types";
+import { formatCurrency } from "../../utils/formatters";
 
-// Component con để render mỗi item, có thể tái sử dụng từ PackageListScreen
 const PlanCard: React.FC<{
   item: Package;
   onEdit: (item: Package) => void;
@@ -48,7 +48,7 @@ const PlanCard: React.FC<{
         <Text style={styles.cardName}>{item.name}</Text>
         <Text style={styles.cardDetails}>Thời hạn: {item.duration} ngày</Text>
         <Text style={styles.cardPrice}>
-          {parseFloat(item.price).toLocaleString("vi-VN")} VNĐ
+          {formatCurrency(parseFloat(item.price))}
         </Text>
       </View>
       <TouchableOpacity style={styles.menuButton} onPress={showMenu}>
@@ -61,7 +61,7 @@ const PlanCard: React.FC<{
 const ManagePackagesScreen = () => {
   const [packages, setPackages] = useState<Package[]>([]);
   const [loading, setLoading] = useState(true);
-  const navigation = useNavigation<ManagerNavigationProp>(); // Cần type đúng
+  const navigation = useNavigation<ManagerNavigationProp>();
 
   const fetchPackages = useCallback(async () => {
     try {
@@ -74,7 +74,6 @@ const ManagePackagesScreen = () => {
     }
   }, []);
 
-  // Sử dụng useFocusEffect để tự động tải lại danh sách khi quay lại màn hình này
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
@@ -82,13 +81,13 @@ const ManagePackagesScreen = () => {
     }, [])
   );
   const handleEdit = (item: Package) => {
-    navigation.navigate("EditPackage", { packageItem: item }); // Sẽ tạo màn hình này
+    navigation.navigate("EditPackage", { packageItem: item });
   };
   const handleDelete = async (itemId: number) => {
     try {
       await api.delete(`/api/gyms/packages/${itemId}/`);
       Alert.alert("Thành công", "Đã xóa gói tập.");
-      fetchPackages(); // Tải lại danh sách
+      fetchPackages();
     } catch (error) {
       Alert.alert("Lỗi", "Không thể xóa gói tập.");
     }
@@ -127,7 +126,6 @@ const ManagePackagesScreen = () => {
   );
 };
 
-// ... Thêm styles ...
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#121212" },
   center: {
@@ -154,7 +152,7 @@ const styles = StyleSheet.create({
   },
   addButtonText: { color: "#121212", fontSize: 24, fontWeight: "bold" },
   card: {
-    flexDirection: "row", // Để chia card thành 2 phần
+    flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#1E1E1E",
     borderRadius: 10,
@@ -163,7 +161,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   cardContent: {
-    flex: 1, // Chiếm hết không gian còn lại
+    flex: 1,
   },
   menuButton: {
     padding: 10,

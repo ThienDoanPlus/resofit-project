@@ -12,6 +12,7 @@ class CustomUser(AbstractUser):
     # Chúng ta không cần định nghĩa lại username, password, email vì AbstractUser đã có sẵn
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='member')
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    expo_push_token = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return self.username

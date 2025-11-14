@@ -6,15 +6,13 @@ import {
   FlatList,
   ActivityIndicator,
   Alert,
-  TouchableOpacity, // Sửa lỗi cú pháp
+  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import api from "../api/api";
 import { useNavigation } from "@react-navigation/native";
-// Import Package từ một nguồn duy nhất là types.ts
 import { MemberNavigationProp, Package } from "../navigation/types";
 
-// Component con để render mỗi item trong danh sách
 const PackageCard: React.FC<{ item: Package }> = ({ item }) => {
   const navigation = useNavigation<MemberNavigationProp>();
   return (
@@ -24,7 +22,6 @@ const PackageCard: React.FC<{ item: Package }> = ({ item }) => {
         navigation.navigate("PackageDetail", { packageItem: item })
       }
     >
-      {/* Thêm lại nội dung của card để nó hiển thị */}
       <Text style={styles.cardName}>{item.name}</Text>
       <Text style={styles.cardDetails}>Thời hạn: {item.duration} ngày</Text>
       <Text style={styles.cardPrice}>

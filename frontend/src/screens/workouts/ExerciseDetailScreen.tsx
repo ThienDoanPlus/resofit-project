@@ -70,16 +70,12 @@ const ExerciseDetailScreen = () => {
             <Video
               ref={videoRef}
               style={styles.video}
-              source={{ uri: videoSource }} // <-- Sử dụng trực tiếp
+              source={{ uri: videoSource }}
               useNativeControls
               resizeMode={ResizeMode.CONTAIN}
               isLooping
               onPlaybackStatusUpdate={(status: AVPlaybackStatus) => {
-                // Thêm kiểu
                 if (status.isLoaded && !status.isPlaying) {
-                  // Có thể có lỗi ở đây, playAsync() không tồn tại trên status
-                  // mà nằm trên videoRef.current
-                  // videoRef.current?.playAsync(); // Logic này đã đúng
                 }
               }}
             />
@@ -104,7 +100,6 @@ const ExerciseDetailScreen = () => {
             </View>
           </View>
 
-          {/* PHẦN HƯỚNG DẪN ĐÃ ĐƯỢC NÂNG CẤP */}
           {exercise.instructions && exercise.instructions.length > 0 && (
             <>
               <Text style={styles.sectionTitle}>Các bước thực hiện</Text>
@@ -181,13 +176,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginRight: 10,
-    width: 25, // Dành không gian cho số
+    width: 25,
   },
   stepText: {
     color: "#BDBDBD",
     fontSize: 16,
     lineHeight: 24,
-    flex: 1, // Để text tự xuống dòng
+    flex: 1,
   },
 });
 

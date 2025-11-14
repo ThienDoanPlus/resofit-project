@@ -13,17 +13,11 @@ const PaymentWebViewScreen = () => {
   const navigation = useNavigation<MemberNavigationProp>();
   const { uri } = route.params;
 
-  // Hàm này sẽ được gọi mỗi khi URL trong WebView thay đổi
   const handleNavigationStateChange = (navState: any) => {
     const { url } = navState;
 
-    // Kiểm tra xem URL có phải là returnUrl mà chúng ta đã định nghĩa không
-    // Ví dụ: resofit://payment-success
     if (url.startsWith("resofit://")) {
-      // Đóng WebView và quay lại màn hình trước đó
       navigation.goBack();
-      // Có thể điều hướng đến một màn hình "Thanh toán thành công"
-      // navigation.navigate('PaymentSuccess');
     }
   };
 

@@ -7,23 +7,29 @@ import {
   StyleSheet,
   AppStateStatus,
   Button,
+  Alert,
 } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  useNavigationContainerRef,
+} from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import * as LocalAuthentication from "expo-local-authentication";
-
-// 1. Import ĐÚNG và ĐẦY ĐỦ các types từ file types.ts
+import * as Notifications from "expo-notifications";
+import { NotificationBehavior } from "expo-notifications";
 import {
   AuthStackParamList,
   ManagerStackParamList,
   MemberTabParamList,
   MemberStackParamList,
-  PTStackParamList, // <-- Đã thêm
+  PTStackParamList,
+  RootStackParamList,
 } from "./types";
+import api from "../api/api";
+import Constants from "expo-constants";
 
-// 2. Import Context và các màn hình
 import { useAuth } from "../context/AuthContext";
 import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
@@ -39,7 +45,6 @@ import CreatePackageScreen from "../screens/manager/CreatePackageScreen";
 import PTDashboardScreen from "../screens/pt/PTDashboardScreen";
 import PackageDetailScreen from "../screens/PackageDetailScreen";
 import PaymentWebViewScreen from "../screens/PaymentWebViewScreen";
-// import AICoachScreen from "../screens/AICoachScreen";
 import MyMembersScreen from "../screens/pt/MyMembersScreen";
 import AppointmentManagementScreen from "../screens/pt/AppointmentManagementScreen";
 import ProfileScreen from "../screens/ProfileScreen";
@@ -55,8 +60,15 @@ import ExerciseDetailScreen from "../screens/workouts/ExerciseDetailScreen";
 import WorkoutSessionScreen from "../screens/workouts/WorkoutSessionScreen";
 import EditPackageScreen from "../screens/manager/EditPackageScreen";
 import ManageMembersScreen from "../screens/manager/ManageMembersScreen";
+import ManageStaffScreen from "../screens/manager/ManageStaffScreen";
+import ReportsScreen from "../screens/manager/ReportsScreen";
+import ReminderScreen from "../screens/ReminderScreen";
+import MemberDetailScreen from "../screens/pt/MemberDetailScreen";
+import MemberBookingsScreen from "../screens/pt/MemberBookingsScreen";
+import AssignPlanScreen from "../screens/pt/AssignPlanScreen";
+import ChatListScreen_For_PT from "../screens/pt/ChatListScreen_For_PT";
+// import AICoachScreen from "../screens/AICoachScreen";
 
-// --- LUỒNG XÁC THỰC ---
 const AuthStackNav = createNativeStackNavigator<AuthStackParamList>();
 const AuthStack = () => (
   <AuthStackNav.Navigator screenOptions={{ headerShown: false }}>
@@ -65,9 +77,16 @@ const AuthStack = () => (
   </AuthStackNav.Navigator>
 );
 
+Notifications.setNotificationHandler({
+  handleNotification: async () =>
+    ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    } as NotificationBehavior),
+});
 // --- LUỒNG HỘI VIÊN (MEMBER) ---
 
-// 4. SỬA LẠI KHAI BÁO NÀY: Dùng MemberTabParamList cho Tab Navigator
 const Tab = createBottomTabNavigator<MemberTabParamList>();
 
 const MemberTabs = () => (
@@ -95,13 +114,14 @@ const MemberTabs = () => (
           iconName = focused ? "person-circle" : "person-circle-outline";
         else if (route.name === "WorkoutPlanList")
           iconName = focused ? "barbell" : "barbell-outline";
+        else if (route.name === "Reminder")
+          iconName = focused ? "notifications" : "notifications-outline";
         else iconName = "alert-circle-outline";
 
         return <Ionicons name={iconName} size={size} color={color} />;
       },
     })}
   >
-    {/* Các Tab.Screen này bây giờ hoàn toàn hợp lệ với MemberTabParamList */}
     <Tab.Screen
       name="Home"
       component={HomeScreen}
@@ -128,6 +148,11 @@ const MemberTabs = () => (
       options={{ title: "Trò chuyện" }}
     />
     <Tab.Screen
+      name="Reminder"
+      component={ReminderScreen}
+      options={{ title: "Nhắc nhở" }}
+    />
+    <Tab.Screen
       name="Profile"
       component={ProfileScreen}
       options={{ title: "Hồ sơ" }}
@@ -140,7 +165,7 @@ const MemberStack = () => (
   <MemberStackNav.Navigator
     screenOptions={{
       headerShown: false,
-      animation: "fade_from_bottom", // Hiệu ứng mờ và trượt nhẹ từ dưới
+      animation: "fade_from_bottom",
     }}
   >
     <MemberStackNav.Screen name="MainTabs" component={MemberTabs} />
@@ -149,19 +174,16 @@ const MemberStack = () => (
       name="Chat"
       component={ChatScreen}
       options={({ route }) => ({
-        // Bật lại header cho riêng màn hình này
         headerShown: true,
 
-        // Lấy tên từ params và đặt làm tiêu đề
         title: route.params.chatPartner.username,
 
-        // Style cho header
         headerStyle: {
-          backgroundColor: "#1E1E1E", // Màu nền nhất quán
+          backgroundColor: "#1E1E1E",
         },
-        headerTintColor: "#FFFFFF", // Màu của chữ tiêu đề và nút Back
-        headerTitleAlign: "center", // Căn giữa tiêu đề
-        headerBackTitleVisible: false, // Ẩn chữ "Back" trên iOS
+        headerTintColor: "#FFFFFF",
+        headerTitleAlign: "center",
+        headerBackTitleVisible: false,
       })}
     />
     {/* <MemberStackNav.Screen name="AICoach" component={AICoachScreen} /> */}
@@ -199,9 +221,8 @@ const MemberStack = () => (
       name="Settings"
       component={SettingsScreen}
       options={{
-        // Sử dụng hiệu ứng modal chuẩn của nền tảng
         presentation: "modal",
-        headerShown: true, // Bật header cho màn hình modal
+        headerShown: true,
         title: "Cài đặt",
         headerStyle: { backgroundColor: "#1E1E1E" },
         headerTintColor: "white",
@@ -210,7 +231,6 @@ const MemberStack = () => (
     <MemberStackNav.Screen
       name="ChangePassword"
       component={ChangePasswordScreen}
-      // Thêm options để có header đẹp
       options={{
         presentation: "modal",
         title: "Đổi mật khẩu",
@@ -237,14 +257,12 @@ const MemberStack = () => (
     <MemberStackNav.Screen
       name="ExerciseList"
       component={ExerciseListScreen}
-      // Tắt header mặc định vì chúng ta đã có header tùy chỉnh
       options={{ headerShown: false }}
     />
     <MemberStackNav.Screen
       name="ExerciseDetail"
       component={ExerciseDetailScreen}
       options={{
-        // Sử dụng hiệu ứng modal để nó trượt lên
         presentation: "modal",
         headerShown: false,
       }}
@@ -260,7 +278,7 @@ const MemberStack = () => (
 // --- LUỒNG QUẢN LÝ (MANAGER) ---
 const ManagerStackNav = createNativeStackNavigator<ManagerStackParamList>();
 const ManagerStack = () => (
-  <ManagerStackNav.Navigator screenOptions={{ headerShown: false }}>
+  <ManagerStackNav.Navigator screenOptions={{ headerShown: true }}>
     <ManagerStackNav.Screen
       name="ManagerDashboard"
       component={ManagerDashboardScreen}
@@ -278,6 +296,12 @@ const ManagerStack = () => (
       name="ManageMembers"
       component={ManageMembersScreen}
     />
+    <ManagerStackNav.Screen name="ManageStaff" component={ManageStaffScreen} />
+    <ManagerStackNav.Screen
+      name="Reports"
+      component={ReportsScreen}
+      options={{ title: "Báo cáo" }}
+    />
   </ManagerStackNav.Navigator>
 );
 
@@ -292,6 +316,34 @@ const PTStack = () => (
       name="ManageAppointments"
       component={AppointmentManagementScreen}
     />
+    <PTStackNav.Screen name="MemberDetail" component={MemberDetailScreen} />
+    <PTStackNav.Screen
+      name="MemberBookings"
+      component={MemberBookingsScreen}
+      options={{ headerShown: true }}
+    />
+    <PTStackNav.Screen name="AssignPlan" component={AssignPlanScreen} />
+    <PTStackNav.Screen
+      name="ChatList_For_PT"
+      component={ChatListScreen_For_PT}
+      options={{ title: "Trò chuyện" }}
+    />
+    <PTStackNav.Screen name="Profile" component={ProfileScreen} />
+    <PTStackNav.Screen
+      name="Settings"
+      component={SettingsScreen}
+      options={{ presentation: "modal" }}
+    />
+    <PTStackNav.Screen
+      name="EditProfile"
+      component={EditProfileScreen}
+      options={{ presentation: "modal" }}
+    />
+    <PTStackNav.Screen
+      name="ChangePassword"
+      component={ChangePasswordScreen}
+      options={{ presentation: "modal" }}
+    />
   </PTStackNav.Navigator>
 );
 
@@ -300,7 +352,146 @@ const AppNavigator = () => {
   const { accessToken, isLoading, user, isAppLockEnabled } = useAuth();
   const [isAppLocked, setIsAppLocked] = useState(false);
   const appState = useRef(AppState.currentState);
+  const navigationRef = useNavigationContainerRef<RootStackParamList>();
 
+  useEffect(() => {
+    const setupNotifications = async () => {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+
+      if (finalStatus !== "granted") {
+        console.log("Permission not granted to send notifications.");
+        return;
+      }
+
+      if (accessToken) {
+        try {
+          const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+          if (!projectId) {
+            console.error(
+              "Project ID not found in app.json. Cannot get push token."
+            );
+            return;
+          }
+
+          const token = (
+            await Notifications.getExpoPushTokenAsync({ projectId })
+          ).data;
+          console.log("My Expo Push Token:", token);
+
+          if (token) {
+            await api.post("/api/users/register-push-token/", {
+              push_token: token,
+            });
+            console.log("✅ Push token successfully sent to server.");
+          }
+        } catch (error) {
+          console.error("Failed to get or send push token", error);
+        }
+      }
+    };
+
+    setupNotifications();
+  }, [accessToken]);
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const data = response.notification.request.content.data;
+        if (user && navigationRef.isReady() && data && data.screen) {
+          const screenName = data.screen as string;
+          let params: any = undefined;
+          if (data.params && typeof data.params === "string") {
+            try {
+              params = JSON.parse(data.params);
+            } catch (e) {
+              console.error("Failed to parse notification params:", e);
+              return;
+            }
+          }
+
+          const screensInTabs: Array<keyof MemberTabParamList> = [
+            "Home",
+            "MyBookings",
+            "Progress",
+            "ChatList",
+            "Profile",
+            "Reminder",
+            "WorkoutPlanList",
+          ];
+
+          if ((screensInTabs as string[]).includes(screenName)) {
+            navigationRef.navigate("MainTabs", {
+              screen: screenName as keyof MemberTabParamList,
+              params: params,
+            });
+          } else if (
+            screenName in (navigationRef.getRootState()?.routeNames || [])
+          ) {
+            navigationRef.navigate(screenName as any, params as any);
+          } else {
+            console.warn(
+              `Unknown or inaccessible screen name in notification: ${screenName}`
+            );
+          }
+        }
+      }
+    );
+
+    return () => subscription.remove();
+  }, [user]);
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const data = response.notification.request.content.data;
+        if (user && navigationRef.isReady() && data && data.screen) {
+          const screenName = data.screen as string;
+          let params: any = undefined;
+          if (data.params && typeof data.params === "string") {
+            try {
+              params = JSON.parse(data.params);
+            } catch (e) {
+              console.error("Failed to parse notification params:", e);
+              return;
+            }
+          }
+
+          const screensInTabs: Array<keyof MemberTabParamList> = [
+            "Home",
+            "MyBookings",
+            "Progress",
+            "ChatList",
+            "Profile",
+            "Reminder",
+            "WorkoutPlanList",
+          ];
+
+          if ((screensInTabs as string[]).includes(screenName)) {
+            navigationRef.navigate("MainTabs", {
+              screen: screenName as keyof MemberTabParamList,
+              params: params,
+            });
+          } else if (
+            screenName in (navigationRef.getRootState()?.routeNames || [])
+          ) {
+            navigationRef.navigate(screenName as any, params as any);
+          } else {
+            console.warn(
+              `Unknown or inaccessible screen name in notification: ${screenName}`
+            );
+          }
+        }
+      }
+    );
+
+    return () => subscription.remove();
+  }, [user]);
   useEffect(() => {
     const subscription = AppState.addEventListener(
       "change",
@@ -355,7 +546,7 @@ const AppNavigator = () => {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       {accessToken && user ? (
         <>
           {user.role === "manager" && <ManagerStack />}

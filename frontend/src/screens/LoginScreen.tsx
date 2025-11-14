@@ -15,7 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import { AuthNavigationProp } from "../navigation/types";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/api";
-import axios from "axios"; // Vẫn cần để dùng isAxiosError
+import axios from "axios";
 import { Ionicons } from "@expo/vector-icons";
 import * as LocalAuthentication from "expo-local-authentication";
 import * as Google from "expo-auth-session/providers/google";
@@ -40,7 +40,6 @@ const LoginScreen = () => {
   });
   const navigation = useNavigation<AuthNavigationProp>();
 
-  // Gộp lại thành 1 lần gọi useAuth() duy nhất
   const {
     signIn,
     enableBiometricAuth,
@@ -83,11 +82,6 @@ const LoginScreen = () => {
       });
 
       await signIn(response.data);
-
-      // Hỏi sau khi đã đăng nhập thành công
-      // (signIn sẽ điều hướng, nên câu hỏi này có thể không hiện kịp)
-      // Chúng ta sẽ chuyển nó sang màn hình Home ở bước sau để trải nghiệm tốt hơn
-      // askToEnableBiometrics();
     } catch (error) {
       let errorMessage = "Đã có lỗi xảy ra, vui lòng thử lại.";
       if (axios.isAxiosError(error) && error.response) {
@@ -109,8 +103,6 @@ const LoginScreen = () => {
   const handleBiometricLogin = async () => {
     setLoadingBiometric(true);
     await signInWithBiometric();
-    // Không cần setLoadingBiometric(false) vì nếu thành công, app sẽ chuyển màn hình
-    // Nếu thất bại, hàm trong context đã hiện Alert, ta set lại state để người dùng có thể thử lại
     setLoadingBiometric(false);
   };
 
@@ -249,20 +241,16 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: "#121212", fontSize: 18, fontWeight: "bold" },
 
-  // Style cho phần dưới form
   footerContainer: {
     marginTop: 20,
-    alignItems: "center", // Căn giữa tất cả item trong footer
+    alignItems: "center",
   },
-  switchButton: {
-    // không cần margin top nữa vì đã có trong footer
-  },
+  switchButton: {},
   switchText: { color: "#A0A0A0", textAlign: "center", fontSize: 14 },
   switchTextBold: { color: "#A0FF00", fontWeight: "bold" },
 
-  // Style cho nút sinh trắc học
   biometricButton: {
-    marginTop: 30, // Thêm khoảng cách với dòng text ở trên
+    marginTop: 30,
     padding: 15,
     borderRadius: 50,
     borderWidth: 1,
@@ -272,14 +260,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFFFFF", // Màu nền trắng
+    backgroundColor: "#FFFFFF",
     height: 50,
     borderRadius: 10,
     marginTop: 15,
-    marginHorizontal: 20, // Để nó khớp với chiều rộng của các input
+    marginHorizontal: 20,
   },
   googleButtonText: {
-    color: "#000000", // Chữ màu đen
+    color: "#000000",
     fontSize: 18,
     fontWeight: "bold",
     marginLeft: 10,

@@ -14,13 +14,12 @@ import api from "../../api/api";
 import axios from "axios";
 import StyledInput from "../../screens/components/StyledInput";
 import PrimaryButton from "../../screens/components/PrimaryButton";
-import { useRoute, RouteProp } from "@react-navigation/native"; // Thêm useRoute
-import { ManagerStackParamList } from "../../navigation/types"; // Import ParamList
-
+import { useRoute, RouteProp } from "@react-navigation/native";
+import { ManagerStackParamList } from "../../navigation/types";
 const CreatePackageScreen = () => {
   const navigation = useNavigation();
-  const route = useRoute<RouteProp<ManagerStackParamList, "EditPackage">>(); // Lấy route
-  const { packageItem } = route.params; // Lấy dữ liệu gói tập cũ
+  const route = useRoute<RouteProp<ManagerStackParamList, "EditPackage">>();
+  const { packageItem } = route.params;
   const [name, setName] = useState(packageItem.name);
   const [description, setDescription] = useState(packageItem.description || "");
   const [price, setPrice] = useState(String(packageItem.price));
@@ -29,7 +28,6 @@ const CreatePackageScreen = () => {
   const [loading, setLoading] = useState(false);
 
   const handleUpdatePackage = async () => {
-    // Validate input
     if (!name || !price || !duration) {
       Alert.alert("Lỗi", "Tên, Giá và Thời hạn là bắt buộc.");
       return;
@@ -72,7 +70,7 @@ const CreatePackageScreen = () => {
           onChangeText={setDescription}
           placeholder="Mô tả quyền lợi..."
           multiline
-          style={{ height: 100, paddingTop: 15 }} // Có thể truyền style tùy chỉnh
+          style={{ height: 100, paddingTop: 15 }}
         />
 
         <StyledInput

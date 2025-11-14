@@ -21,7 +21,6 @@ import {
   Log,
 } from "../navigation/types";
 
-// --- IMPORT CÁC COMPONENT CON ---
 import SummaryView from "./progress_components/SummaryView";
 import ChartView from "./progress_components/ChartView";
 import AddProgressLogModal from "./components/AddProgressLogModal";
@@ -59,11 +58,9 @@ const ProgressScreen = () => {
       setLoading(false);
       return;
     }
-    // setLoading(true);
     const apiUrlSuffix =
       user?.role === "pt" && memberId ? `?member_id=${memberId}` : "";
     try {
-      // Chỉ cần tải summary, ChartView sẽ tự tải dữ liệu của nó
       const [summaryRes, logsRes] = await Promise.all([
         api.get(`/api/tracking/summary/${apiUrlSuffix}`),
         api.get(`/api/tracking/logs/${apiUrlSuffix}`),
@@ -74,7 +71,7 @@ const ProgressScreen = () => {
       if (summaryRes.data && summaryRes.data.bmi) {
         setLoadingAdvice(true);
         try {
-          const userProfile = await api.get("/api/users/profile/"); // Lấy profile để có chiều cao
+          const userProfile = await api.get("/api/users/profile/");
           const adviceRes = await api.post("/api/tracking/generate-advice/", {
             weight: summaryRes.data.latest_log.weight,
             height: userProfile.data.height,
@@ -97,16 +94,15 @@ const ProgressScreen = () => {
   useFocusEffect(
     useCallback(() => {
       const loadData = async () => {
-        setLoading(true); // Bật loading
-        await fetchData(); // Gọi hàm async
-        setLoading(false); // Tắt loading sau khi xong
+        setLoading(true);
+        await fetchData();
+        setLoading(false);
       };
 
       loadData();
-    }, [fetchData]) // Phụ thuộc vào fetchData
+    }, [fetchData])
   );
   const renderContent = () => {
-    // Không cần truyền loading vào SummaryView nữa vì nó được xử lý ở đây
     if (loading)
       return (
         <ActivityIndicator
@@ -117,7 +113,7 @@ const ProgressScreen = () => {
       );
 
     switch (selectedIndex) {
-      case 0: // Tổng quan
+      case 0:
         return (
           <SummaryView
             summary={summaryData}
@@ -171,7 +167,7 @@ const ProgressScreen = () => {
         <AddProgressLogModal
           isVisible={isModalVisible}
           onClose={() => setModalVisible(false)}
-          onLogAdded={fetchData} // Tải lại summary sau khi thêm log mới
+          onLogAdded={fetchData}
           memberId={memberId}
         />
       )}

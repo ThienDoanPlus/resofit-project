@@ -13,11 +13,10 @@ import api from "../../api/api";
 import PrimaryButton from "../../screens/components/PrimaryButton";
 import StyledInput from "../../screens/components/StyledInput";
 
-// Định nghĩa các props mà component này sẽ nhận từ component cha
 interface Props {
   isVisible: boolean;
   onClose: () => void;
-  onLogAdded: () => void; // Hàm callback để báo cho cha biết đã thêm thành công
+  onLogAdded: () => void;
   memberId: number;
 }
 
@@ -33,7 +32,6 @@ const AddProgressLogModal: React.FC<Props> = ({
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Hàm reset state khi modal đóng lại
   const handleClose = () => {
     setWeight("");
     setBodyFat("");
@@ -50,15 +48,15 @@ const AddProgressLogModal: React.FC<Props> = ({
     try {
       const logData = {
         member_id: memberId,
-        date: date.toISOString().split("T")[0], // Format YYYY-MM-DD
+        date: date.toISOString().split("T")[0],
         weight: parseFloat(weight),
         body_fat_percentage: bodyFat ? parseFloat(bodyFat) : null,
       };
       await api.post("/api/tracking/logs/", logData);
 
       Alert.alert("Thành công", "Đã thêm bản ghi tiến độ.");
-      onLogAdded(); // Gọi callback để component cha tải lại dữ liệu
-      handleClose(); // Đóng modal và reset form
+      onLogAdded();
+      handleClose();
     } catch (error: any) {
       if (error.response && error.response.data && error.response.data.date) {
         Alert.alert(

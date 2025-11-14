@@ -16,50 +16,48 @@ class RevenueStatsView(APIView):
     permission_classes = [IsAuthenticated, IsManager]
 
     def get(self, request, *args, **kwargs):
-        period = request.query_params.get('period', 'month')  # Mặc định là 'month'
+        period = request.query_params.get('period', 'year')  # Đổi mặc định thành 'year'
 
-        # Lấy năm hiện tại
-        current_year = datetime.now().year
+        try:
+            # Lấy năm từ request, nếu không có thì lấy năm hiện tại
+            year = int(request.query_params.get('year', datetime.now().year))
+        except (ValueError, TypeError):
+            year = datetime.now().year
 
-        # Lọc các thanh toán đã hoàn thành trong năm hiện tại
-        payments = Payment.objects.filter(
-            status='completed',
-            created_at__year=current_year
-        )
+        payments = Payment.objects.filter(status='completed', created_at__year=year)
+        members = CustomUser.objects.filter(role='member', date_joined__year=year)
 
         if period == 'year':
-            # Nhóm theo tháng và tính tổng doanh thu mỗi tháng
-            stats = payments.annotate(
-                month=TruncMonth('created_at')
-            ).values('month').annotate(
-                total=Sum('amount')
-            ).order_by('month')
+            # Nhóm theo tháng của năm đã chọn
+            stats = payments.annotate(month=TruncMonth('created_at')).values('month').annotate(
+                total=Sum('amount')).order_by('month')
 
-            # Format lại dữ liệu cho biểu đồ
-            labels = [s['month'].strftime('%b') for s in stats]  # 'Jan', 'Feb'...
-            data = [s['total'] for s in stats]
+            # Tạo dữ liệu cho 12 tháng của năm đó
+            monthly_totals = {i: 0 for i in range(1, 13)}
+            for s in stats:
+                monthly_totals[s['month'].month] = s['total']
+
+            labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            data = [monthly_totals[i] for i in range(1, 13)]
 
         elif period == 'month':
-            # Nhóm theo ngày và tính tổng doanh thu mỗi ngày trong tháng hiện tại
-            current_month = datetime.now().month
-            stats = payments.filter(created_at__month=current_month).annotate(
-                day=TruncDay('created_at')
-            ).values('day').annotate(
-                total=Sum('amount')
-            ).order_by('day')
+            try:
+                # Lấy tháng từ request, nếu không có thì lấy tháng hiện tại
+                month = int(request.query_params.get('month', datetime.now().month))
+            except (ValueError, TypeError):
+                month = datetime.now().month
 
-            labels = [s['day'].strftime('%d') for s in stats]  # '01', '02'...
+            # Nhóm theo ngày của tháng/năm đã chọn
+            stats = payments.filter(created_at__month=month).annotate(day=TruncDay('created_at')).values(
+                'day').annotate(total=Sum('amount')).order_by('day')
+
+            labels = [s['day'].strftime('%d/%m') for s in stats]
             data = [s['total'] for s in stats]
 
-        else:  # Mặc định là 'day' (có thể phát triển sau)
-            labels = []
-            data = []
+        else:
+            labels, data = [], []
 
-        response_data = {
-            'labels': labels,
-            'data': data
-        }
-        return Response(response_data)
+        return Response({'labels': labels, 'data': data})
 
 
 class DashboardSummaryView(APIView):
@@ -92,3 +90,38 @@ class DashboardSummaryView(APIView):
         }
 
         return Response(summary_data)
+
+
+class MemberStatsView(APIView):
+    permission_classes = [IsAuthenticated, IsManager]
+
+    def get(self, request, *args, **kwargs):
+        current_year = datetime.now().year
+
+        # Lấy tất cả hội viên được tạo trong năm hiện tại
+        members = CustomUser.objects.filter(
+            role='member',
+            date_joined__year=current_year
+        )
+
+        # Nhóm các hội viên theo tháng gia nhập và đếm số lượng
+        stats = members.annotate(
+            month=TruncMonth('date_joined')
+        ).values('month').annotate(
+            count=Count('id')
+        ).order_by('month')
+
+        # Tạo một dict để chứa kết quả cho 12 tháng (mặc định là 0)
+        monthly_counts = {i: 0 for i in range(1, 13)}
+        for s in stats:
+            monthly_counts[s['month'].month] = s['count']
+
+        # Format lại dữ liệu cho biểu đồ
+        labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        data = [monthly_counts[i] for i in range(1, 13)]
+
+        response_data = {
+            'labels': labels,
+            'data': data
+        }
+        return Response(response_data)

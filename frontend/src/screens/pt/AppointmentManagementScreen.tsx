@@ -24,7 +24,7 @@ const AppointmentItem: React.FC<{ item: Booking; onUpdate: () => void }> = ({
         "Thành công",
         `Đã ${action === "approve" ? "chấp nhận" : "từ chối"} lịch hẹn.`
       );
-      onUpdate(); // Gọi hàm để tải lại danh sách
+      onUpdate();
     } catch (error) {
       Alert.alert("Lỗi", "Không thể cập nhật lịch hẹn.");
     }
@@ -95,7 +95,6 @@ const AppointmentManagementScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
-      // Định nghĩa một hàm async bên trong...
       const fetchData = async () => {
         setLoading(true);
         try {
@@ -134,7 +133,6 @@ const AppointmentManagementScreen = () => {
   );
 };
 
-// ... styles
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#121212" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },

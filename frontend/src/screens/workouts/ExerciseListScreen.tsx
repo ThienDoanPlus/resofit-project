@@ -26,13 +26,12 @@ import PrimaryButton from "../../screens/components/PrimaryButton";
 
 // --- CHILD COMPONENTS ---
 
-// Component cho mỗi dòng bài tập đã được "đánh bóng"
 const ExerciseItem: React.FC<{ item: WorkoutDayExercise; index: number }> = ({
   item,
   index,
 }) => {
   const navigation = useNavigation<MemberNavigationProp>();
-  const exercise = item.exercise; // Lấy object exercise ra cho dễ dùng
+  const exercise = item.exercise;
 
   return (
     <Animated.View entering={FadeInDown.duration(500).delay(index * 100)}>
@@ -63,7 +62,7 @@ const ExerciseItem: React.FC<{ item: WorkoutDayExercise; index: number }> = ({
           // Nếu được AI hỗ trợ, hiển thị nút "AI Coach"
           <TouchableOpacity
             style={styles.aiButton}
-            onPress={() => navigation.navigate("AICoach")}
+            // onPress={() => navigation.navigate("AICoach")}
           >
             <Ionicons name="camera-reverse-outline" size={24} color="#121212" />
             <Text style={styles.aiButtonText}>AI</Text>
@@ -137,14 +136,14 @@ const ExerciseListHeader: React.FC<{
 const ExerciseListScreen = () => {
   const route = useRoute<RouteProp<MemberStackParamList, "ExerciseList">>();
   const navigation = useNavigation<MemberNavigationProp>();
-  const insets = useSafeAreaInsets(); // Hook để lấy vùng an toàn
+  const insets = useSafeAreaInsets();
   const { dayId, dayTitle, exercises } = route.params;
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
         onPress={() => navigation.goBack()}
-        style={[styles.backButton, { top: insets.top + 10 }]} // Tự động căn chỉnh nút back
+        style={[styles.backButton, { top: insets.top + 10 }]}
       >
         <Ionicons name="arrow-back" size={28} color="white" />
       </TouchableOpacity>
@@ -158,7 +157,7 @@ const ExerciseListScreen = () => {
         ListHeaderComponent={
           <ExerciseListHeader dayTitle={dayTitle} exercises={exercises} />
         }
-        contentContainerStyle={{ paddingBottom: 120 }} // Tăng không gian cho nút
+        contentContainerStyle={{ paddingBottom: 120 }}
       />
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
@@ -166,7 +165,7 @@ const ExerciseListScreen = () => {
           title="BẮT ĐẦU BUỔI TẬP"
           onPress={() =>
             navigation.replace("WorkoutSession", { dayId, dayTitle, exercises })
-          } // Dùng replace để có UX tốt hơn
+          }
         />
       </View>
     </View>
@@ -185,13 +184,13 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 20,
   },
-  headerImage: { width: "100%", height: 220 }, // Tăng chiều cao
+  headerImage: { width: "100%", height: 220 },
   gradient: { flex: 1, justifyContent: "flex-end", padding: 20 },
   headerTitle: { fontSize: 36, fontWeight: "bold", color: "white" },
   summaryContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    alignItems: "center", // Căn giữa theo chiều dọc
+    alignItems: "center",
     paddingVertical: 10,
     backgroundColor: "none",
     marginHorizontal: 120,
@@ -252,7 +251,7 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#121212",
     borderTopWidth: 1,
-    borderTopColor: "rgba(51, 51, 51, 0.5)", // Viền mờ hơn
+    borderTopColor: "rgba(51, 51, 51, 0.5)",
   },
   aiButton: {
     backgroundColor: "#A0FF00",

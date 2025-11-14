@@ -30,7 +30,12 @@ class Exercise(models.Model):
     # Nhóm cơ chính
     muscle_group = models.CharField(max_length=50, blank=True, null=True)
     ai_supported = models.BooleanField(default=False, help_text="Đánh dấu nếu bài tập này được hỗ trợ bởi AI Coach")
-
+    rep_counting_logic = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        help_text="Tên của hàm logic đếm rep phía frontend s"
+    )
     def __str__(self):
         return self.name
 
@@ -103,3 +108,18 @@ class UserWorkoutProgress(models.Model):
 
     def __str__(self):
         return f"{self.member.username} completed {self.workout_day}"
+
+class UserWorkoutPlanAssignment(models.Model):
+    """
+    Lưu lại việc PT nào đã gán chương trình nào cho hội viên nào.
+    """
+    pt = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='assigned_plans_by_pt', limit_choices_to={'role': 'pt'})
+    member = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='assigned_plan', limit_choices_to={'role': 'member'})
+    plan = models.ForeignKey(WorkoutPlan, on_delete=models.CASCADE, related_name='assignments')
+    assigned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('member', 'plan') # Một hội viên chỉ được gán 1 chương trình tại 1 thời điểm (qua OneToOneField)
+
+    def __str__(self):
+        return f"{self.pt.username} assigned '{self.plan.name}' to {self.member.username}"

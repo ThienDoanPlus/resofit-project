@@ -11,11 +11,10 @@ def create_momo_payment_request(order_id, amount, order_info, extra_data):
     amount_str = str(int(amount))
 
     # URL mà MoMo sẽ gọi khi thanh toán hoàn tất (IPN)
-    # PHẢI LÀ URL PUBLIC, chúng ta sẽ dùng ngrok
     notify_url = f"{settings.NGROK_URL}/api/payments/momo-ipn/"
 
     # URL người dùng sẽ được chuyển đến sau khi thanh toán trên app MoMo
-    return_url = "resofit://payment-success"  # Custom URL Scheme để quay lại app
+    return_url = "resofit://payment-success"
 
     raw_signature = (
         f"accessKey={settings.MOMO_ACCESS_KEY}"

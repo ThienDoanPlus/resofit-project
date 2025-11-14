@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ProgressLog
+from .models import ProgressLog, WaterLog
 from users.serializers import UserSerializer
 
 class ProgressLogSerializer(serializers.ModelSerializer):
@@ -26,3 +26,12 @@ class ProgressLogSerializer(serializers.ModelSerializer):
             pass
 
         return None  # Trả về None nếu không thể tính toán
+
+class WaterLogSerializer(serializers.ModelSerializer):
+    """
+    Serializer cho model WaterLog.
+    """
+    class Meta:
+        model = WaterLog
+        fields = ['id', 'date', 'amount']
+# --------------------------

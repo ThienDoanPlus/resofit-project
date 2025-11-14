@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { SummaryData } from "../../navigation/types";
 
-// Component con cho mỗi chỉ số so sánh
 const ComparisonRow: React.FC<{
   label: string;
   value: string;
@@ -56,7 +55,6 @@ const ComparisonView: React.FC<{
         value={`${weight_change > 0 ? "+" : ""}${weight_change.toFixed(1)} kg`}
         color={changeColor}
       />
-      {/* Thêm các chỉ số so sánh khác ở đây (ví dụ: % mỡ) nếu có */}
     </Animated.View>
   );
 };

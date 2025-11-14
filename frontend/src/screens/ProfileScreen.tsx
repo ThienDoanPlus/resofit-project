@@ -3,18 +3,14 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
-// Import các công cụ cần thiết
 import { useAuth } from "../context/AuthContext";
 import PrimaryButton from "../screens/components/PrimaryButton";
 import { useNavigation } from "@react-navigation/native";
-import { MemberNavigationProp } from "../navigation/types";
 
 const ProfileScreen = () => {
-  // Lấy thông tin người dùng và hàm signOut từ AuthContext
   const { user, signOut } = useAuth();
-  const navigation = useNavigation<MemberNavigationProp>();
+  const navigation = useNavigation<any>();
 
-  // Xử lý khi nhấn vào một item trong menu (hiện tại chỉ thông báo)
   const handleMenuItemPress = (itemName: string) => {
     alert(`Chức năng "${itemName}" đang được phát triển!`);
   };
@@ -24,8 +20,6 @@ const ProfileScreen = () => {
       {/* Phần Header chứa thông tin cá nhân */}
       <View style={styles.profileHeader}>
         <Image
-          // Sử dụng dịch vụ ui-avatars.com để tự động tạo avatar từ tên người dùng
-          // Đây là một mẹo rất hay cho giai đoạn phát triển
           source={{
             uri: `https://ui-avatars.com/api/?name=${
               user?.username || "A"
@@ -35,6 +29,15 @@ const ProfileScreen = () => {
         />
         <Text style={styles.username}>{user?.username}</Text>
         <Text style={styles.email}>{user?.email}</Text>
+        <View style={styles.roleBadge}>
+          <Text style={styles.roleText}>
+            {user?.role === "pt"
+              ? "Huấn luyện viên"
+              : user?.role === "manager"
+              ? "Quản lý"
+              : "Hội viên"}
+          </Text>
+        </View>
       </View>
 
       {/* Phần Menu chức năng */}
@@ -47,16 +50,14 @@ const ProfileScreen = () => {
           <Text style={styles.menuText}>Chỉnh sửa Hồ sơ</Text>
           <Ionicons name="chevron-forward-outline" size={22} color="#A0A0A0" />
         </TouchableOpacity>
-
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate("ChangePassword")} // <-- Sửa lại đây
+          onPress={() => navigation.navigate("ChangePassword")}
         >
           <Ionicons name="lock-closed-outline" size={22} color="#A0A0A0" />
           <Text style={styles.menuText}>Đổi mật khẩu</Text>
           <Ionicons name="chevron-forward-outline" size={22} color="#A0A0A0" />
         </TouchableOpacity>
-
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => navigation.navigate("Settings")}
@@ -65,13 +66,44 @@ const ProfileScreen = () => {
           <Text style={styles.menuText}>Cài đặt</Text>
           <Ionicons name="chevron-forward-outline" size={22} color="#A0A0A0" />
         </TouchableOpacity>
+
+        {user?.role === "pt" && (
+          <>
+            <View style={styles.separator} />
+            <Text style={styles.sectionHeader}>Công cụ PT</Text>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => navigation.navigate("ManageAppointments")}
+            >
+              <Ionicons name="calendar-outline" size={22} color="#A0A0A0" />
+              <Text style={styles.menuText}>Quản lý Lịch hẹn</Text>
+              <Ionicons
+                name="chevron-forward-outline"
+                size={22}
+                color="#A0A0A0"
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => navigation.navigate("MyMembers")}
+            >
+              <Ionicons name="people-outline" size={22} color="#A0A0A0" />
+              <Text style={styles.menuText}>Danh sách Hội viên</Text>
+              <Ionicons
+                name="chevron-forward-outline"
+                size={22}
+                color="#A0A0A0"
+              />
+            </TouchableOpacity>
+          </>
+        )}
       </View>
 
       {/* Nút Đăng xuất */}
       <PrimaryButton
         title="Đăng xuất"
         onPress={signOut}
-        style={styles.logoutButton} // Style tùy chỉnh cho nút logout
+        style={styles.logoutButton}
         textStyle={styles.logoutButtonText}
       />
     </SafeAreaView>
@@ -108,7 +140,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   menuContainer: {
-    flex: 1, // Đẩy nút logout xuống dưới
+    flex: 1,
     marginTop: 20,
   },
   menuItem: {
@@ -124,7 +156,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     marginLeft: 15,
-    flex: 1, // Đẩy icon chevron ra cuối
+    flex: 1,
   },
   logoutButton: {
     backgroundColor: "#1E1E1E",
@@ -133,6 +165,28 @@ const styles = StyleSheet.create({
   },
   logoutButtonText: {
     color: "#FF5A5F",
+  },
+  roleBadge: {
+    backgroundColor: "#333",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 10,
+  },
+  roleText: {
+    color: "#A0FF00",
+    fontSize: 12,
+    fontWeight: "bold",
+    textTransform: "capitalize",
+  },
+  separator: { height: 20, backgroundColor: "#121212" },
+  sectionHeader: {
+    color: "gray",
+    fontSize: 14,
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    paddingHorizontal: 20,
+    marginBottom: 10,
   },
 });
 

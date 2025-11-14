@@ -12,7 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import Animated from "react-native-reanimated"; // Thêm import
+import Animated from "react-native-reanimated";
 
 import {
   MemberStackParamList,
@@ -21,8 +21,8 @@ import {
 import api from "../api/api";
 import axios from "axios";
 import PrimaryButton from "../screens/components/PrimaryButton";
+import { formatCurrency } from "../utils/formatters";
 
-// Component nhỏ cho mỗi quyền lợi
 const BenefitItem: React.FC<{
   icon: keyof typeof Ionicons.glyphMap;
   text: string;
@@ -81,7 +81,7 @@ const PackageDetailScreen = () => {
               uri:
                 packageItem.image_url ||
                 "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b",
-            }} // Ảnh mặc định
+            }}
             style={styles.headerImage}
           >
             <LinearGradient
@@ -116,7 +116,7 @@ const PackageDetailScreen = () => {
         <View style={styles.priceContainer}>
           <Text style={styles.priceLabel}>Tổng cộng</Text>
           <Text style={styles.priceValue}>
-            {parseFloat(packageItem.price).toLocaleString("vi-VN")} VNĐ
+            {formatCurrency(parseFloat(packageItem.price))}
           </Text>
         </View>
         <PrimaryButton
@@ -131,7 +131,7 @@ const PackageDetailScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  scrollContainer: { paddingBottom: 120 }, // Thêm padding để footer không che nội dung
+  scrollContainer: { paddingBottom: 120 },
   headerImage: {
     width: "100%",
     height: 300,

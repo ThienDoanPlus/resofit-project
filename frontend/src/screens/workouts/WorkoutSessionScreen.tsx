@@ -70,16 +70,14 @@ const WorkoutSessionScreen = () => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [isResting, countdown, isPaused]); // Thêm isPaused vào dependencies
+  }, [isResting, countdown, isPaused]);
 
   const playSoundAndGoNext = async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
     try {
-      // Yêu cầu phát và LẤY TRẠNG THÁI (status) của âm thanh
       const status = await soundObject.current.replayAsync();
 
-      // Dựa vào thời lượng của âm thanh để đợi
       // Nếu âm thanh dài 0.5s, chúng ta sẽ đợi khoảng 0.5s
       if (status.isLoaded && status.durationMillis) {
         // Đợi một khoảng thời gian bằng độ dài của âm thanh
@@ -147,7 +145,7 @@ const WorkoutSessionScreen = () => {
     );
   };
   const isLastExercise = currentExerciseIndex >= exercises.length - 1;
-  const isLastSet = currentSet >= (currentExercise?.sets || 1); // Thêm `?.` và giá trị mặc định
+  const isLastSet = currentSet >= (currentExercise?.sets || 1);
   // Biến để kiểm tra xem đã đến bài tập và hiệp cuối cùng chưa
   const isWorkoutFinished = isLastExercise && isLastSet;
 
@@ -169,7 +167,7 @@ const WorkoutSessionScreen = () => {
             style={styles.media}
             resizeMode={ResizeMode.CONTAIN}
             isLooping
-            shouldPlay={true} // Tự động phát video khi sẵn sàng
+            shouldPlay={true}
             useNativeControls={true}
           />
         ) : currentExercise.exercise.gif_url ? (
@@ -213,7 +211,7 @@ const WorkoutSessionScreen = () => {
             >
               <Ionicons
                 name={isPaused ? "play-circle-outline" : "pause-circle-outline"}
-                size={48} // Tăng kích thước cho dễ nhấn
+                size={48}
                 color="white"
               />
             </TouchableOpacity>

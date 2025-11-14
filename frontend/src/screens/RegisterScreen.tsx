@@ -16,7 +16,6 @@ import { useNavigation } from "@react-navigation/native";
 import { AuthNavigationProp } from "../navigation/types";
 import api from "../api/api";
 import axios from "axios";
-// --- IMPORT FORMIK VÀ YUP ---
 import { Formik } from "formik";
 import * as Yup from "yup";
 import PrimaryButton from "../../src/screens/components/PrimaryButton";
@@ -33,7 +32,7 @@ const RegisterSchema = Yup.object().shape({
     .min(8, "Mật khẩu quá ngắn (tối thiểu 8 ký tự)")
     .required("Mật khẩu là bắt buộc"),
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref("password")], "Mật khẩu không khớp") // Phải khớp với trường 'password'
+    .oneOf([Yup.ref("password")], "Mật khẩu không khớp")
     .required("Xác nhận mật khẩu là bắt buộc"),
 });
 
@@ -150,7 +149,7 @@ const RegisterScreen = () => {
                   title="Đăng ký"
                   onPress={() => handleSubmit()}
                   loading={isSubmitting}
-                  style={{ marginTop: 10 }} // Có thể truyền style tùy chỉnh
+                  style={{ marginTop: 10 }}
                 />
               </View>
             )}

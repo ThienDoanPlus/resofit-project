@@ -7,7 +7,7 @@ import * as Yup from "yup";
 import api from "../api/api";
 import PrimaryButton from "../screens/components/PrimaryButton";
 import StyledInput from "../screens/components/StyledInput";
-import { useAuth } from "../context/AuthContext"; // <-- IMPORT useAuth
+import { useAuth } from "../context/AuthContext";
 
 // Định nghĩa các quy tắc validation
 const ChangePasswordSchema = Yup.object().shape({
@@ -39,7 +39,6 @@ const ChangePasswordScreen = () => {
         [
           {
             text: "OK",
-            // KHI NHẤN OK, GỌI HÀM signOut
             onPress: () => signOut(),
           },
         ]

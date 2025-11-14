@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import api from "../../api/api";
-// Import các kiểu dữ liệu từ types.ts (chúng ta sẽ tạo chúng)
 import { Member, PTAssignment, PTNavigationProp } from "../../navigation/types";
 import { useNavigation } from "@react-navigation/native";
 
@@ -18,7 +17,7 @@ const MemberItem: React.FC<{ assignment: PTAssignment }> = ({ assignment }) => {
 
   const handlePress = () => {
     // Điều hướng đến màn hình MemberProgress và truyền thông tin của hội viên
-    navigation.navigate("MemberProgress", {
+    navigation.navigate("MemberDetail", {
       memberId: assignment.member.id,
       memberName: assignment.member.username,
     });
@@ -57,13 +56,11 @@ const MyMembersScreen = () => {
         data={assignments}
         renderItem={({ item }) => <MemberItem assignment={item} />}
         keyExtractor={(item) => item.member.id.toString()}
-        // ... thêm loading, empty component ...
       />
     </SafeAreaView>
   );
 };
 
-// ... styles
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#121212" },
   title: { fontSize: 24, fontWeight: "bold", color: "white", padding: 20 },

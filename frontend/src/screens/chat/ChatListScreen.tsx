@@ -15,14 +15,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { MemberNavigationProp } from "../../navigation/types";
 import api from "../../api/api";
 
-// Định nghĩa kiểu cho một người dùng trong danh sách
 interface ChatUser {
   id: number;
   username: string;
   role: "pt" | "manager" | "member";
 }
 
-// Component con để render mỗi item, có thể tùy chỉnh thêm avatar...
+// Component con để render mỗi item, có thể tùy chỉnh thêm avatar
 const UserItem: React.FC<{ item: ChatUser }> = ({ item }) => {
   const navigation = useNavigation<MemberNavigationProp>();
 

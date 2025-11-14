@@ -30,8 +30,7 @@ type ChartDataType = {
 const ChartView: React.FC<ChartViewProps> = ({ period, memberId }) => {
   const [data, setData] = useState<Log[]>([]);
   const [loading, setLoading] = useState(true);
-  const [chartType, setChartType] = useState<"weight" | "bmi">("weight"); // State mới để quản lý loại biểu đồ
-
+  const [chartType, setChartType] = useState<"weight" | "bmi">("weight");
   // Tạo danh sách năm và tháng cho dropdown
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => ({
@@ -61,7 +60,7 @@ const ChartView: React.FC<ChartViewProps> = ({ period, memberId }) => {
         setData(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error(`Failed to fetch ${period} data`, error);
-        setData([]); // Reset data về mảng rỗng nếu lỗi
+        setData([]);
       } finally {
         setLoading(false);
       }
@@ -80,15 +79,15 @@ const ChartView: React.FC<ChartViewProps> = ({ period, memberId }) => {
       // Lọc ra các log có dữ liệu bmi
       const bmiData = data.filter((log) => log.bmi != null);
       if (bmiData.length < 2) {
-        return null; // Trả về null nếu không đủ dữ liệu
+        return null;
       }
-      datasetData = bmiData.map((log) => log.bmi!); // Dấu ! để báo rằng chúng ta chắc chắn nó không null
+      datasetData = bmiData.map((log) => log.bmi!);
       legend = "Chỉ số BMI";
     } else {
       // Mặc định là 'weight'
       const weightData = data.filter((log) => log.weight != null);
       if (weightData.length < 2) {
-        return null; // Trả về null nếu không đủ dữ liệu
+        return null;
       }
       datasetData = weightData.map((log) => log.weight);
       legend = "Cân nặng (kg)";
@@ -150,7 +149,6 @@ const ChartView: React.FC<ChartViewProps> = ({ period, memberId }) => {
           />
         </View>
       </View>
-      {/* --- KHỐI CHUYỂN ĐỔI BIỂU ĐỒ --- */}
       <View style={styles.switchContainer}>
         <Text style={styles.switchLabel}>Cân nặng</Text>
         <Switch

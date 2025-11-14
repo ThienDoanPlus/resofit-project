@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from gyms.models import MembershipPackage
+from django.utils import timezone
 
 class Payment(models.Model):
     STATUS_CHOICES = (
@@ -22,3 +23,17 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment {self.order_id} for {self.member.username}"
+
+
+class Subscription(models.Model):
+    member = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='subscription')
+    package = models.ForeignKey(MembershipPackage, on_delete=models.SET_NULL, null=True)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    is_active = models.BooleanField(default=True)
+
+    def is_expired(self):
+        return self.end_date < timezone.now().date()
+
+    def __str__(self):
+        return f"{self.member.username}'s subscription to {self.package.name}"

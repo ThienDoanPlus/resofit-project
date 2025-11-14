@@ -27,7 +27,6 @@ import {
   MemberStackParamList,
 } from "../../navigation/types";
 
-// Component cho mỗi dòng ngày tập
 const DayItem: React.FC<{
   item: WorkoutDay;
   index: number;
@@ -94,14 +93,12 @@ const WorkoutPlanDetailScreen = () => {
     } catch (error) {
       console.error("Failed to fetch plan detail", error);
     } finally {
-      // Chỉ tắt loading lần đầu
       if (loading) setLoading(false);
     }
   }, [planId]);
 
   useFocusEffect(
     useCallback(() => {
-      // Chỉ gọi hàm fetch bên trong
       fetchPlanDetail();
     }, [fetchPlanDetail])
   );
@@ -189,20 +186,19 @@ const styles = StyleSheet.create({
   dayTitle: { color: "white", fontSize: 16, fontWeight: "bold" },
   daySubtitle: { color: "gray", fontSize: 13, marginTop: 4 },
   dayItemCompleted: {
-    backgroundColor: "#1A1A1A", // Màu nền hơi khác
-    opacity: 0.7, // Làm mờ đi
+    backgroundColor: "#1A1A1A",
+    opacity: 0.7,
   },
   timerContainer: {
     alignItems: "center",
-    justifyContent: "space-between", // Phân bố đều không gian
-    flex: 1, // Cho phép nó chiếm hết chiều cao của infoContainer
+    justifyContent: "space-between",
+    flex: 1,
   },
   timerLabel: { color: "gray", fontSize: 16, marginBottom: 10 },
   timerText: { color: "#A0FF00", fontSize: 40, fontWeight: "bold" },
 
-  // THÊM STYLE MỚI
   pauseButton: {
-    marginTop: 20, // Tạo khoảng cách với đồng hồ
+    marginTop: 20,
   },
 });
 

@@ -37,7 +37,6 @@ const ManageMembersScreen = () => {
   const fetchMembers = useCallback(async () => {
     setLoading(true);
     try {
-      // Thêm tham số search vào URL nếu có
       const response = await api.get(
         `/api/users/members/?search=${searchQuery}`
       );
@@ -47,14 +46,12 @@ const ManageMembersScreen = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery]); // Chạy lại khi searchQuery thay đổi
+  }, [searchQuery]);
 
-  // Tải dữ liệu khi màn hình được focus hoặc khi search
   useEffect(() => {
-    // Thêm debounce để tránh gọi API liên tục khi gõ
     const handler = setTimeout(() => {
       fetchMembers();
-    }, 500); // Đợi 500ms sau khi người dùng ngừng gõ
+    }, 500);
 
     return () => clearTimeout(handler);
   }, [searchQuery, fetchMembers]);
@@ -69,7 +66,6 @@ const ManageMembersScreen = () => {
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Quản lý Hội viên</Text>
 
-      {/* Thanh tìm kiếm */}
       <View style={styles.searchContainer}>
         <Ionicons
           name="search"

@@ -21,7 +21,6 @@ import api from "../api/api";
 import PrimaryButton from "../screens/components/PrimaryButton";
 import StyledInput from "../screens/components/StyledInput";
 
-// Định nghĩa kiểu cho một PT trong dropdown
 interface PT {
   label: string;
   value: number;
@@ -37,11 +36,10 @@ const ConfirmBookingScreen = () => {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Tải danh sách PT khi màn hình được mount
   useEffect(() => {
     const fetchPTs = async () => {
       try {
-        // Tái sử dụng API lấy danh sách nhân viên và lọc ra PT
+        //sử dụng API lấy danh sách nhân viên và lọc ra PT
         const response = await api.get("/api/users/staff/");
         const ptList = response.data
           .filter((staff: any) => staff.role === "pt")
@@ -83,7 +81,7 @@ const ConfirmBookingScreen = () => {
         selectedPt
           ? "Yêu cầu đặt lịch của bạn đã được gửi đến PT. Vui lòng chờ xác nhận."
           : "Bạn đã đặt lịch tự tập thành công!",
-        [{ text: "OK", onPress: () => navigation.goBack() }] // Quay lại màn hình đặt lịch
+        [{ text: "OK", onPress: () => navigation.goBack() }]
       );
     } catch (error) {
       Alert.alert("Lỗi", "Không thể tạo lịch hẹn. Vui lòng thử lại.");

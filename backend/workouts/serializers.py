@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from .models import Exercise, WorkoutPlan, WorkoutDay, WorkoutDayExercise, UserWorkoutProgress
+from users.serializers import UserSerializer
+from .models import Exercise, WorkoutPlan, WorkoutDay, WorkoutDayExercise, UserWorkoutProgress, UserWorkoutPlanAssignment
 
 
-# --- Serializers Cấp Chi tiết nhất ---
 
 class ExerciseSerializer(serializers.ModelSerializer):
     """Serializer cho một bài tập đơn lẻ."""
@@ -14,7 +14,7 @@ class ExerciseSerializer(serializers.ModelSerializer):
         # Liệt kê các trường, bao gồm cả các trường ảo mới
         fields = [
             'id', 'name', 'instructions', 'equipment', 'muscle_group',
-            'video_url', 'gif_url', 'ai_supported'
+            'video_url', 'gif_url', 'ai_supported',
         ]
 
     # Phương thức để lấy giá trị cho trường `video_url`
@@ -117,3 +117,22 @@ class WorkoutPlanDetailSerializer(serializers.ModelSerializer):
         model = WorkoutPlan
         # Bao gồm cả trường `days` đã được định nghĩa ở trên
         fields = ['id', 'name', 'description', 'difficulty', 'image_url', 'days']
+
+class UserWorkoutPlanAssignmentSerializer(serializers.ModelSerializer):
+    class PlanSummarySerializer(serializers.ModelSerializer):
+        class Meta:
+            model = WorkoutPlan
+            # Chỉ lấy những trường thực sự cần
+            fields = ['id', 'name', 'image_url']
+
+    # ------------------------------------
+
+    pt = UserSerializer(read_only=True)
+    member = UserSerializer(read_only=True)
+
+    # SỬ DỤNG SERIALIZER CON MỚI
+    plan = PlanSummarySerializer(read_only=True)
+
+    class Meta:
+        model = UserWorkoutPlanAssignment
+        fields = '__all__'

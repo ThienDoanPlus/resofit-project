@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     color: "#EFEFEF",
     fontSize: 14,
     lineHeight: 22,
-    flex: 1, // Để text tự xuống dòng
+    flex: 1,
     marginLeft: 10,
   },
 });

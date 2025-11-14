@@ -13,11 +13,10 @@ import * as Yup from "yup";
 import moment from "moment";
 
 import api from "../api/api";
-import { MemberProfile } from "../navigation/types"; // Sẽ tạo type này
+import { MemberProfile } from "../navigation/types";
 import PrimaryButton from "../screens/components/PrimaryButton";
 import StyledInput from "../screens/components/StyledInput";
 
-// Định nghĩa validation schema
 const ProfileSchema = Yup.object().shape({
   height: Yup.number()
     .positive("Chiều cao phải là số dương")
@@ -39,12 +38,10 @@ const EditProfileScreen = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  // Tải dữ liệu profile hiện có khi màn hình mở ra
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const response = await api.get("/api/users/profile/");
-        // Chuyển đổi null thành chuỗi rỗng để Formik hoạt động
         const profileData = response.data;
         for (const key in profileData) {
           if (profileData[key] === null) {
@@ -65,7 +62,6 @@ const EditProfileScreen = () => {
     values: Partial<MemberProfile>,
     { setSubmitting }: any
   ) => {
-    // Chuyển đổi chuỗi rỗng thành null trước khi gửi đi
     const dataToSubmit: any = {};
     for (const key in values) {
       dataToSubmit[key] =

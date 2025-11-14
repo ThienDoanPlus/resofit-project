@@ -5,7 +5,7 @@ import {
   Bubble,
   InputToolbar,
   Send,
-  Composer, // thêm Composer để custom ô nhập
+  Composer,
 } from "react-native-gifted-chat";
 import {
   collection,
@@ -77,9 +77,9 @@ const AnimatedBubble = (props: any) => {
 };
 
 const ChatScreen = () => {
-  const { user } = useAuth(); // lấy thông tin user hiện tại
+  const { user } = useAuth();
   const route = useRoute<RouteProp<MemberStackParamList, "Chat">>();
-  const { chatPartner } = route.params; // lấy đối tượng chat cùng
+  const { chatPartner } = route.params;
 
   const [messages, setMessages] = useState<IMessage[]>([]);
 

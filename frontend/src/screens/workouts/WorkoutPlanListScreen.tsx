@@ -15,9 +15,8 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 
 import api from "../../api/api";
 import { WorkoutPlan, MemberNavigationProp } from "../../navigation/types";
-import ProgressBar from "../../screens/components/ProgressBar"; // Import component mới
+import ProgressBar from "../../screens/components/ProgressBar";
 
-// Component con cho mỗi thẻ chương trình tập
 const PlanCard: React.FC<{ item: WorkoutPlan; index: number }> = ({
   item,
   index,
@@ -29,11 +28,11 @@ const PlanCard: React.FC<{ item: WorkoutPlan; index: number }> = ({
   const getDifficultyColor = () => {
     switch (item.difficulty) {
       case "beginner":
-        return "#2ecc71"; // Green
+        return "#2ecc71";
       case "intermediate":
-        return "#f1c40f"; // Yellow
+        return "#f1c40f";
       case "advanced":
-        return "#e74c3c"; // Red
+        return "#e74c3c";
       default:
         return "gray";
     }
@@ -43,9 +42,13 @@ const PlanCard: React.FC<{ item: WorkoutPlan; index: number }> = ({
     <Animated.View entering={FadeInDown.duration(500).delay(index * 150)}>
       <TouchableOpacity
         style={styles.cardContainer}
-        onPress={() =>
-          navigation.navigate("WorkoutPlanDetail", { planId: item.id })
-        }
+        onPress={() => {
+          console.log(
+            "Navigating to Detail with item:",
+            JSON.stringify(item, null, 2)
+          );
+          navigation.navigate("WorkoutPlanDetail", { planId: item.id });
+        }}
       >
         <ImageBackground
           source={{
@@ -85,27 +88,25 @@ const WorkoutPlanListScreen = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchPlans = useCallback(async () => {
-    // Không cần setLoading(true) ở đây nữa
     try {
       const response = await api.get("/api/workouts/plans/");
       setPlans(response.data);
     } catch (error) {
       console.error("Failed to fetch workout plans", error);
     } finally {
-      // setLoading(false); // Quản lý loading ở hook
     }
   }, []);
 
   useFocusEffect(
     useCallback(() => {
       const loadData = async () => {
-        setLoading(true); // Bật loading
-        await fetchPlans(); // Gọi hàm async
-        setLoading(false); // Tắt loading sau khi xong
+        setLoading(true);
+        await fetchPlans();
+        setLoading(false);
       };
 
       loadData();
-    }, [fetchPlans]) // Phụ thuộc vào fetchPlans
+    }, [fetchPlans])
   );
   if (loading) {
     return (
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderBottomLeftRadius: 15,
     borderBottomRightRadius: 15,
-    marginTop: -1, // Để che đi đường viền của ImageBackground
+    marginTop: -1,
   },
   progressText: {
     color: "gray",

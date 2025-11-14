@@ -232,18 +232,18 @@ const styles = StyleSheet.create({
 
   // ---- Slots Section ----
   slotsContainer: {
-    flex: 1, // Cho phép phần này chiếm hết không gian còn lại
-    marginTop: 24, // Tăng khoảng cách với lịch
+    flex: 1,
+    marginTop: 24,
     borderTopWidth: 1,
-    borderTopColor: "#222", // Thêm đường kẻ phân cách tinh tế
+    borderTopColor: "#222",
     paddingTop: 20,
   },
   slotsTitle: {
     color: "white",
-    fontSize: 20, // Tăng kích thước
+    fontSize: 20,
     fontWeight: "bold",
     marginBottom: 16,
-    paddingHorizontal: 20, // Thêm padding để thẳng hàng với title
+    paddingHorizontal: 20,
   },
 
   // ---- Slot Item ----
@@ -251,29 +251,29 @@ const styles = StyleSheet.create({
     backgroundColor: "#1E1E1E",
     paddingVertical: 14,
     paddingHorizontal: 24,
-    borderRadius: 30, // Bo tròn nhiều hơn để tạo cảm giác "viên thuốc"
+    borderRadius: 30,
     marginRight: 12,
     borderWidth: 1,
-    borderColor: "#333", // Thêm viền nhẹ
+    borderColor: "#333",
   },
   slotItemPressed: {
-    backgroundColor: "#A0FF00", // Hiệu ứng khi nhấn (sẽ thêm sau)
+    backgroundColor: "#A0FF00",
     borderColor: "#A0FF00",
   },
   slotText: {
-    color: "#EFEFEF", // Đổi màu mặc định thành trắng ngà
+    color: "#EFEFEF",
     fontSize: 16,
     fontWeight: "bold",
   },
   slotTextPressed: {
-    color: "#121212", // Đổi màu chữ khi nhấn
+    color: "#121212",
   },
 
   // ---- Empty State ----
   emptySlotsText: {
-    color: "#666", // Giảm độ tương phản
+    color: "#666",
     fontStyle: "italic",
-    paddingHorizontal: 20, // Thêm padding
+    paddingHorizontal: 20,
   },
 });
 

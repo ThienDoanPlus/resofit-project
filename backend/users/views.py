@@ -1,9 +1,10 @@
 from rest_framework.response import Response
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework import status
-from .serializers import PasswordChangeSerializer, MemberProfileSerializer
+from .serializers import PasswordChangeSerializer, MemberProfileSerializer,UserDetailSerializer
 from .serializers import UserSerializer
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
@@ -12,8 +13,10 @@ from firebase_admin import auth as firebase_auth
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListAPIView
 from .models import CustomUser
-from django.db.models import Q
-from .permissions import IsManager # Import quyền của Manager
+from .permissions import IsManager, IsPT
+from payments.models import Subscription
+from payments.serializers import SubscriptionSerializer
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny]) # Cho phép bất kỳ ai cũng có thể gọi API này
@@ -82,20 +85,19 @@ def get_firebase_token(request):
 
 class StaffListView(ListAPIView):
     """
-    API view to provide a list of staff members (PTs and Managers)
-    for members to start a chat with.
+    API view to provide a list of staff members (PTs and Managers).
+    Now restricted to Managers only.
     """
     serializer_class = UserSerializer
+    # THAY ĐỔI DÒNG NÀY
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Lấy user đang đăng nhập
         current_user = self.request.user
-        # Trả về danh sách tất cả user là PT hoặc Manager,
-        # loại trừ chính user đang xem (nếu họ là staff)
+        # Chỉ lấy PT, không cần lấy Manager nữa
         return CustomUser.objects.filter(
-            Q(role='pt') | Q(role='manager')
-        ).exclude(id=current_user.id)
+            role='pt'
+        ).exclude(id=current_user.id).order_by('username')
 
 
 class ChangePasswordView(APIView):
@@ -157,3 +159,33 @@ class MemberListView(ListAPIView):
             queryset = queryset.filter(username__icontains=search_query)
 
         return queryset.order_by('username')
+
+class CurrentSubscriptionView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, *args, **kwargs):
+        try:
+            subscription = request.user.subscription
+            serializer = SubscriptionSerializer(subscription)
+            return Response(serializer.data)
+        except Subscription.DoesNotExist:
+            return Response(None)
+
+class RegisterPushTokenView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        token = request.data.get('push_token')
+        if token:
+            request.user.expo_push_token = token
+            request.user.save()
+            return Response({'status': 'token saved'}, status=status.HTTP_200_OK)
+        return Response({'error': 'No token provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+class MemberDetailView(RetrieveAPIView):
+    """
+    API để PT lấy thông tin chi tiết của một hội viên.
+    """
+    queryset = CustomUser.objects.filter(role='member')
+    serializer_class = UserDetailSerializer
+    permission_classes = [IsAuthenticated, IsPT]
+    # `lookup_field` mặc định là `pk` (primary key), nên URL sẽ là /users/members/{id}/

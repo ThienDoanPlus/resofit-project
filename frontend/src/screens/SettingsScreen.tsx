@@ -12,9 +12,7 @@ import { useAuth } from "../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { useNavigation } from "@react-navigation/native";
-// Import đúng type cho navigation
 import { MemberNavigationProp } from "../navigation/types";
-// Component cho mỗi dòng cài đặt
 
 const SettingRow: React.FC<{
   icon: keyof typeof Ionicons.glyphMap;

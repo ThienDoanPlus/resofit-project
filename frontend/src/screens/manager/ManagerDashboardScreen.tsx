@@ -12,10 +12,8 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { ManagerNavigationProp } from "../../navigation/types";
 import { Ionicons } from "@expo/vector-icons";
-import RevenueChart from "./components/RevenueChart";
-import api from "../../api/api"; // Thêm api
-
-// Component thẻ thống kê (không đổi)
+import api from "../../api/api";
+import { formatCurrency } from "../../utils/formatters";
 const StatCard = ({
   title,
   value,
@@ -38,12 +36,6 @@ const DashboardHeader: React.FC<{ summaryData: any | null }> = ({
 }) => {
   const { user } = useAuth();
 
-  // Hàm định dạng số tiền
-  const formatCurrency = (value: number | null | undefined) => {
-    if (value == null) return "0đ";
-    return `${value.toLocaleString("vi-VN")}đ`;
-  };
-
   return (
     <>
       <Text style={styles.welcomeTitle}>Chào, Quản lý {user?.username}!</Text>
@@ -64,7 +56,6 @@ const DashboardHeader: React.FC<{ summaryData: any | null }> = ({
           value={String(summaryData?.active_pts || 0)}
           icon="barbell-sharp"
         />
-        {/* Thêm thẻ mới nếu muốn */}
         <StatCard
           title="Lịch hẹn chờ duyệt"
           value={String(summaryData?.pending_appointments || 0)}
@@ -72,8 +63,6 @@ const DashboardHeader: React.FC<{ summaryData: any | null }> = ({
         />
       </View>
 
-      {/* Thêm biểu đồ doanh thu ở đây */}
-      <RevenueChart />
       <Text style={styles.sectionTitle}>Chức năng</Text>
     </>
   );
@@ -113,9 +102,19 @@ const ManagerDashboardScreen = () => {
       title: "Hội viên",
       icon: "people-outline",
       screen: "ManageMembers",
-    }, // <-- Thêm screen
-    { key: "staff", title: "Nhân viên", icon: "person-outline" },
-    { key: "reports", title: "Báo cáo", icon: "stats-chart-outline" },
+    },
+    {
+      key: "staff",
+      title: "Nhân viên",
+      icon: "person-outline",
+      screen: "ManageStaff",
+    },
+    {
+      key: "reports",
+      title: "Báo cáo",
+      icon: "stats-chart-outline",
+      screen: "Reports",
+    },
   ];
   if (loading) {
     return (
